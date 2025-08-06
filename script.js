@@ -328,3 +328,4 @@ if ('serviceWorker' in navigator) {
         //     .then(registration => console.log('SW registered'))
         //     .catch(error => console.log('SW registration failed'));
     });
+}
