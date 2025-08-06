@@ -27,31 +27,26 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Form submission handling
-document.querySelector('.subscription-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const email = this.querySelector('input[type="email"]').value;
-    
-    if (email) {
-        // Simulate form submission
-        const button = this.querySelector('button');
-        const originalText = button.textContent;
+// Pricing button handling
+document.querySelectorAll('.pricing-button').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
         
-        button.textContent = 'Processing...';
-        button.disabled = true;
+        const originalText = this.textContent;
+        this.textContent = 'Processing...';
+        this.disabled = true;
         
         setTimeout(() => {
-            button.textContent = 'Request Sent';
-            button.style.background = '#2d4a5c';
+            this.textContent = 'Redirecting to Checkout...';
             
             setTimeout(() => {
-                button.textContent = originalText;
-                button.disabled = false;
-                button.style.background = '';
-                this.querySelector('input[type="email"]').value = '';
-            }, 2000);
-        }, 1500);
-    }
+                // Here you would integrate with your payment processor
+                alert('Payment integration would be implemented here');
+                this.textContent = originalText;
+                this.disabled = false;
+            }, 1500);
+        }, 1000);
+    });
 });
 
 // Intersection Observer for fade-in animations
