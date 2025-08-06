@@ -16,13 +16,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 window.addEventListener('scroll', () => {
     const header = document.querySelector('.header');
     const scrolled = window.pageYOffset;
-    const rate = scrolled * -0.5;
     
     if (scrolled > 100) {
-        header.style.background = 'rgba(254, 254, 254, 0.98)';
+        header.style.background = 'var(--header-bg-scrolled)';
         header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
     } else {
-        header.style.background = 'rgba(254, 254, 254, 0.95)';
+        header.style.background = 'var(--header-bg)';
         header.style.boxShadow = 'none';
     }
 });
@@ -158,7 +157,7 @@ document.querySelectorAll('.cta-button, .primary-button').forEach(button => {
 document.querySelectorAll('.report-preview').forEach(report => {
     report.addEventListener('mouseenter', () => {
         report.style.transform = 'translateY(-5px)';
-        report.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
+        report.style.boxShadow = '0 10px 30px var(--card-shadow-hover)';
     });
     
     report.addEventListener('mouseleave', () => {
@@ -166,3 +165,166 @@ document.querySelectorAll('.report-preview').forEach(report => {
         report.style.boxShadow = 'none';
     });
 });
+
+// Dark/Light mode detection and system preference handling
+function updateThemeBasedOnSystem() {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+}
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeBasedOnSystem);
+
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', () => {
+    updateThemeBasedOnSystem();
+});
+
+// Enhanced responsive behavior
+function handleResize() {
+    const width = window.innerWidth;
+    const body = document.body;
+    
+    // Add responsive classes
+    body.classList.toggle('mobile', width < 768);
+    body.classList.toggle('tablet', width >= 768 && width < 1024);
+    body.classList.toggle('desktop', width >= 1024);
+    
+    // Adjust hero height on mobile
+    const hero = document.querySelector('.hero');
+    if (width < 768) {
+        hero.style.minHeight = '80vh';
+    } else {
+        hero.style.minHeight = '100vh';
+    }
+}
+
+// Initialize responsive behavior
+window.addEventListener('resize', handleResize);
+window.addEventListener('load', handleResize);
+
+// Enhanced form validation and UX
+document.querySelectorAll('.pricing-button').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Add loading state
+        const originalText = this.textContent;
+        const originalBg = this.style.backgroundColor;
+        
+        this.textContent = 'Processing...';
+        this.disabled = true;
+        this.style.cursor = 'not-allowed';
+        
+        // Simulate processing
+        setTimeout(() => {
+            this.textContent = 'Redirecting...';
+            
+            setTimeout(() => {
+                // Here you would integrate with Stripe or your payment processor
+                this.textContent = 'Opening Checkout...';
+                
+                setTimeout(() => {
+                    // Reset button state
+                    this.textContent = originalText;
+                    this.disabled = false;
+                    this.style.cursor = 'pointer';
+                    
+                    // Show success message or redirect
+                    alert('Payment integration would be implemented here.\nThis would redirect to Stripe Checkout.');
+                }, 1000);
+            }, 1000);
+        }, 800);
+    });
+});
+
+// Improved accessibility features
+document.addEventListener('keydown', (e) => {
+    // Escape key to close any modals or overlays
+    if (e.key === 'Escape') {
+        // Close any open modals or overlays
+        document.querySelectorAll('.modal, .overlay').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+    
+    // Tab navigation enhancement
+    if (e.key === 'Tab') {
+        document.body.classList.add('keyboard-navigation');
+    }
+});
+
+// Remove keyboard navigation class on mouse use
+document.addEventListener('mousedown', () => {
+    document.body.classList.remove('keyboard-navigation');
+});
+
+// Performance optimization: Lazy load animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const performanceObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+            performanceObserver.unobserve(entry.target);
+        }
+    });
+}, observerOptions);
+
+// Enhanced scroll performance
+let ticking = false;
+
+function updateOnScroll() {
+    const scrolled = window.pageYOffset;
+    const header = document.querySelector('.header');
+    const heroBackground = document.querySelector('.hero-background');
+    
+    // Header background update
+    if (scrolled > 100) {
+        header.style.background = 'var(--header-bg-scrolled)';
+        header.style.boxShadow = '0 2px 20px var(--card-shadow-hover)';
+    } else {
+        header.style.background = 'var(--header-bg)';
+        header.style.boxShadow = 'none';
+    }
+    
+    // Parallax effect (only on desktop for performance)
+    if (window.innerWidth > 768 && heroBackground && scrolled < window.innerHeight) {
+        heroBackground.style.transform = `translateY(${scrolled * 0.2}px)`;
+    }
+    
+    ticking = false;
+}
+
+function requestScrollUpdate() {
+    if (!ticking) {
+        requestAnimationFrame(updateOnScroll);
+        ticking = true;
+    }
+}
+
+// Replace the existing scroll listeners with the optimized version
+window.removeEventListener('scroll', () => {}); // Remove old listeners
+window.addEventListener('scroll', requestScrollUpdate, { passive: true });
+
+// Error handling for failed resources
+window.addEventListener('error', (e) => {
+    console.warn('Resource failed to load:', e.target.src || e.target.href);
+    
+    // Fallback for failed font loading
+    if (e.target.tagName === 'LINK' && e.target.href.includes('fonts')) {
+        document.body.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+    }
+});
+
+// Service Worker registration for offline functionality (optional)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Uncomment when you have a service worker
+        // navigator.serviceWorker.register('/sw.js')
+        //     .then(registration => console.log('SW registered'))
+        //     .catch(error => console.log('SW registration failed'));
+    });
